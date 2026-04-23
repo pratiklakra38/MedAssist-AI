@@ -141,7 +141,24 @@ The system generates a structured response containing:
 
 The system bridges symbolic AI and machine learning:
 
-* Symbolic layer → “why this diagnosis”
-* ML layer → “how likely this diagnosis”
+* Symbolic layer → "why this diagnosis"
+* ML layer → "how likely this diagnosis"
 
 This combination enables reliable, explainable, and practical decision support from minimal input.
+
+---
+
+## Agentic AI Integration (Basic Concepts for Mini-Project)
+
+To fulfill **CO4**, we need to show that our system has "agency" (the ability to observe, think, and take actions on its own) rather than just passively taking input and giving output. 
+
+Here are 2 simple ways we demonstrate Agentic AI in our project:
+
+### 1. The "Clarification" Agent (Observe & Ask)
+*   **What it does:** Instead of relying entirely on the user typing everything perfectly, the AI acts like a virtual doctor. 
+*   **How it shows Agency:** If the user only inputs "fever" and "headache", the Agent *Observes* the ambiguity, *Thinks* "This could be Malaria or Heatstroke", and takes the *Action* to ask the user: "Are you also experiencing chills or sweating?" to narrow it down.
+
+### 2. The "Self-Check" Agent (Reflection)
+*   **What it does:** The system double-checks its own predictions before showing them to the user.
+*   **How it shows Agency:** The Agent *Observes* the final disease prediction. If the ML model guesses something serious but no major symptoms match, the Agent *Thinks* "This prediction feels wrong", and takes the *Action* to lower the confidence percentage and warn the user.
+

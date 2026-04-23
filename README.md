@@ -98,6 +98,7 @@ AI-CA-3/
 ├── Project_workflow.md         # Constraints & guardrails
 ├── README.md                   # This file
 ├── requirements.txt            # Python dependencies
+├── timeline.md                 # Phase completion log
 ├── data/
 │   ├── raw/                    # Original dataset
 │   └── processed/              # Cleaned & encoded data
@@ -111,13 +112,11 @@ AI-CA-3/
 │   ├── ml_model.py             # Random Forest training & inference
 │   ├── fusion.py               # Confidence fusion logic
 │   ├── triage.py               # Urgency classification
-│   └── inference.py            # Unified inference pipeline
+│   ├── inference.py            # Unified inference pipeline
+│   └── agents.py               # Agentic AI (QuestionBot, ReviewerBot)
 ├── app.py                      # Streamlit web UI
-├── notebooks/
-│   └── exploration.ipynb       # EDA & experimentation
 └── tests/
     ├── test_rule_engine.py
-    ├── test_ml_model.py
     └── test_fusion.py
 ```
 
@@ -146,3 +145,15 @@ AI-CA-3/
 ## License
 
 Academic project — for educational purposes only.
+
+---
+
+## Academic Evaluation (ESE Rubrics)
+
+| Criteria | Description | CO | Marks |
+| :--- | :--- | :---: | :---: |
+| **Understanding of AI Concepts, Presentation + Viva /Q&A** | Conceptual clarity, quality of presentation/demonstration, ability to explain approach, justify design decisions, and answer questions | CO1 | 5 |
+| **Problem Solving & Knowledge Representation Design** | Case study understanding, problem formulation, and selection/design of appropriate AI techniques/models | CO2 | 3 |
+| **Data Preparation & Feature Engineering** | Data preparation, preprocessing, transformation, and feature extraction/selection relevant to the problem | CO3 | 3 |
+| **Implementation & Result Analysis** | Code implementation, execution, correctness, performance evaluation, and interpretation of results, **ensuring incorporation of Agentic AI concepts within the case study implementation.** | CO4 | 4 |
+| **Total** | | | **15 Marks** |

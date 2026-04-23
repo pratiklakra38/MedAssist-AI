@@ -145,3 +145,17 @@ It is intentionally constrained to:
 * Avoid unsafe real-world misuse
 
 The system emphasizes **learning, explainability, and responsible AI usage** over clinical accuracy or deployment readiness.
+
+---
+
+## Evaluation (ESE Rubrics)
+
+The project is evaluated based on the following End Semester Examination (ESE) rubrics:
+
+| Criteria | Description | CO | Marks |
+| :--- | :--- | :---: | :---: |
+| **Understanding of AI Concepts, Presentation + Viva /Q&A** | Conceptual clarity, quality of presentation/demonstration, ability to explain approach, justify design decisions, and answer questions | CO1 | 5 |
+| **Problem Solving & Knowledge Representation Design** | Case study understanding, problem formulation, and selection/design of appropriate AI techniques/models | CO2 | 3 |
+| **Data Preparation & Feature Engineering** | Data preparation, preprocessing, transformation, and feature extraction/selection relevant to the problem | CO3 | 3 |
+| **Implementation & Result Analysis** | Code implementation, execution, correctness, performance evaluation, and interpretation of results, **ensuring incorporation of Agentic AI concepts within the case study implementation.** | CO4 | 4 |
+| **Total** | | | **15 Marks** |

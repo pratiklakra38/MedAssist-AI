@@ -1,36 +1,40 @@
 import unittest
-from src.rule_engine import RuleEngine, RuleMatch
+import json
+from src.rule_engine import RuleEngine
 
-class TestRuleEngine(unittest.TestCase):
+class TestRules(unittest.TestCase):
     def setUp(self):
         self.engine = RuleEngine()
+        with open("data/processed/symptom_list.json") as f:
+            self.symptoms = json.load(f)
 
-    def test_exact_match(self):
-        symptoms = ["vomiting", "sunken_eyes", "dehydration", "diarrhoea"]
-        matches = self.engine.evaluate(symptoms)
-        self.assertTrue(len(matches) > 0)
-        self.assertEqual(matches[0].disease, "Gastroenteritis")
-        self.assertEqual(matches[0].match_strength, 1.0)
-        
-    def test_partial_match(self):
-        symptoms = ["vomiting", "sunken_eyes"]
-        matches = self.engine.evaluate(symptoms, threshold=0.5)
-        # 2 out of 4 is 0.5, so Gastroenteritis should match
-        self.assertTrue(any(m.disease == "Gastroenteritis" for m in matches))
-        
-    def test_no_match(self):
-        symptoms = ["itching", "shivering"]
-        # With threshold 0.8, these disjoint symptoms shouldn't match any single disease strongly
-        matches = self.engine.evaluate(symptoms, threshold=0.8)
-        self.assertEqual(len(matches), 0)
-        
-    def test_multiple_matches(self):
-        symptoms = ["continuous_sneezing", "chills", "fatigue", "high_fever", "shivering"]
-        # Common cold and Allergy share continuous_sneezing, chills, etc.
-        matches = self.engine.evaluate(symptoms, threshold=0.2)
-        diseases = [m.disease for m in matches]
-        self.assertIn("Allergy", diseases)
-        self.assertIn("Common Cold", diseases)
-        
+    def make_vec(self, names):
+        vec = [0] * len(self.symptoms)
+        for s in names:
+            if s in self.symptoms:
+                vec[self.symptoms.index(s)] = 1
+        return vec
+
+    def test_malaria_full_match(self):
+        vec = self.make_vec(["chills", "vomiting", "high_fever", "sweating", "headache", "nausea", "muscle_pain"])
+        out = self.engine.evaluate(vec)
+        self.assertIn("Malaria", out)
+        self.assertEqual(out["Malaria"]["confidence"], 100.0)
+
+    def test_empty_gives_nothing(self):
+        out = self.engine.evaluate([0] * len(self.symptoms))
+        self.assertEqual(len(out), 0)
+
+    def test_partial_never_100(self):
+        vec = self.make_vec(["high_fever", "headache"])
+        out = self.engine.evaluate(vec)
+        for d in out.values():
+            self.assertLess(d["confidence"], 100)
+
+    def test_malaria_ranks_first(self):
+        vec = self.make_vec(["chills", "high_fever", "sweating", "headache", "muscle_pain"])
+        out = self.engine.evaluate(vec)
+        self.assertEqual(list(out.keys())[0], "Malaria")
+
 if __name__ == "__main__":
     unittest.main()

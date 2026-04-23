@@ -1,108 +1,52 @@
-import os
-import json
-import joblib
 import pandas as pd
-from typing import List, Dict
+import json
+import os
+import joblib
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score
 
-class MLModel:
-    """
-    Probabilistic Machine Learning Model for Disease Prediction.
-    Uses Random Forest to capture symptom co-occurrence patterns.
-    """
-    def __init__(self, model_path: str = None, data_dir: str = None):
+data_path = os.path.join(os.path.dirname(__file__), "..", "data", "processed")
+model_dir = os.path.join(os.path.dirname(__file__), "..", "models")
+model_file = os.path.join(model_dir, "random_forest.pkl")
+
+
+class DiseasePredictor:
+    def __init__(self):
+        with open(os.path.join(data_path, "disease_list.json")) as f:
+            self.diseases = json.load(f)
         self.model = None
-        self.disease_list = []
-        self.symptom_list = []
-        
-        # Determine paths
-        self.project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.data_dir = data_dir or os.path.join(self.project_root, "data", "processed")
-        self.model_path = model_path or os.path.join(self.project_root, "models", "random_forest.pkl")
-        
-        self.load_metadata()
-        if os.path.exists(self.model_path):
-            self.load_model()
-
-    def load_metadata(self):
-        disease_path = os.path.join(self.data_dir, "disease_list.json")
-        symptom_path = os.path.join(self.data_dir, "symptom_list.json")
-        if os.path.exists(disease_path):
-            with open(disease_path, "r") as f:
-                self.disease_list = json.load(f)
-        if os.path.exists(symptom_path):
-            with open(symptom_path, "r") as f:
-                self.symptom_list = json.load(f)
 
     def train(self):
-        """Trains the Random Forest classifier and saves it."""
-        print("Loading training data...")
-        X_train = pd.read_csv(os.path.join(self.data_dir, "X_train.csv"))
-        y_train = pd.read_csv(os.path.join(self.data_dir, "y_train.csv"))
-        X_test = pd.read_csv(os.path.join(self.data_dir, "X_test.csv"))
-        y_test = pd.read_csv(os.path.join(self.data_dir, "y_test.csv"))
-        
-        print("Training Random Forest model...")
+        X_train = pd.read_csv(os.path.join(data_path, "X_train.csv"))
+        y_train = pd.read_csv(os.path.join(data_path, "y_train.csv")).values.ravel()
+        X_test = pd.read_csv(os.path.join(data_path, "X_test.csv"))
+        y_test = pd.read_csv(os.path.join(data_path, "y_test.csv")).values.ravel()
+
         self.model = RandomForestClassifier(
-            n_estimators=500,
-            max_depth=None,
-            min_samples_split=2,
-            min_samples_leaf=1,
-            class_weight='balanced',
-            random_state=42,
-            n_jobs=-1
+            n_estimators=200, class_weight="balanced", random_state=42
         )
-        
-        # Fit model
-        self.model.fit(X_train, y_train.values.ravel())
-        
-        print("Evaluating model...")
-        y_pred = self.model.predict(X_test)
-        acc = accuracy_score(y_test, y_pred)
-        print(f"Accuracy: {acc:.4f}")
-        print("\nClassification Report:")
-        print(classification_report(y_test, y_pred, target_names=self.disease_list))
-        
-        self.save_model()
-        print(f"Model saved to {self.model_path}")
+        self.model.fit(X_train, y_train)
+
+        acc = accuracy_score(y_test, self.model.predict(X_test))
+        print(f"Accuracy: {acc * 100:.2f}%")
+
+        os.makedirs(model_dir, exist_ok=True)
+        joblib.dump(self.model, model_file)
         return acc
 
-    def save_model(self):
-        if self.model is not None:
-            os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
-            joblib.dump(self.model, self.model_path)
+    def load(self):
+        self.model = joblib.load(model_file)
 
-    def load_model(self):
-        if os.path.exists(self.model_path):
-            self.model = joblib.load(self.model_path)
-
-    def predict_proba(self, active_symptoms: List[str]) -> Dict[str, float]:
-        """
-        Predicts disease probabilities based on active symptoms.
-        Returns a dictionary mapping disease names to probability scores.
-        """
+    def predict(self, user_symptoms):
         if self.model is None:
-            raise ValueError("Model is not loaded or trained.")
-            
-        vector = [0] * len(self.symptom_list)
-        for sym in active_symptoms:
-            if sym in self.symptom_list:
-                idx = self.symptom_list.index(sym)
-                vector[idx] = 1
-                
-        df_input = pd.DataFrame([vector], columns=self.symptom_list)
-        probabilities = self.model.predict_proba(df_input)[0]
-        
-        result = {}
-        for idx, prob in enumerate(probabilities):
-            if prob > 0:
-                disease_name = self.disease_list[self.model.classes_[idx]]
-                result[disease_name] = round(float(prob), 4)
-                
-        # Sort descending
-        return dict(sorted(result.items(), key=lambda x: x[1], reverse=True))
+            self.load()
+        probs = self.model.predict_proba([user_symptoms])[0]
+        results = {}
+        for i, cls in enumerate(self.model.classes_):
+            results[self.diseases[cls]] = round(probs[i] * 100, 2)
+        return dict(sorted(results.items(), key=lambda x: x[1], reverse=True))
+
 
 if __name__ == "__main__":
-    ml = MLModel()
-    ml.train()
+    m = DiseasePredictor()
+    m.train()
